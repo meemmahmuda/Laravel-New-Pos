@@ -53,7 +53,7 @@ public function store(Request $request)
         $product = Product::findOrFail($order['product_id']);
         $totalPrice = $product->purchase_price * $order['quantity'];
 
-        // Update the product stock
+        // Uorate the product stock
         $product->stock = ($product->stock ?? 0) + $order['quantity'];
         $product->save();  // Save the updated stock
 

@@ -16,18 +16,17 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('address');
             $table->string('phone_no');
-            $table->unsignedInteger('product_id');
+            $table->unsignedBigInteger('product_id'); // Change to unsignedBigInteger
             $table->integer('quantity');
             $table->decimal('selling_price', 10, 2);
             $table->decimal('discount', 10, 2)->default(0)->nullable();
-            $table->decimal('total_price', 10, 2);
-            $table->decimal('money_taken', 10, 2);
-            $table->decimal('money_returned', 10, 2);
+            $table->decimal('total_price', 10, 2); // Calculate this in application logic
+            $table->decimal('money_taken', 10, 2)->nullable(); // Made nullable
+            $table->decimal('money_returned', 10, 2)->nullable(); // Made nullable
             $table->timestamps();
         
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
-        
     }
 
     /**

@@ -39,7 +39,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('sales.index') }}" class="nav-link text-white">
                         <i class="fa fa-dollar-sign"></i> Sales
                     </a>
                 </li>
