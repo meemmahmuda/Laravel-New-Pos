@@ -26,6 +26,13 @@
                             <td>{{ $supplier->name }}</td>
                             <td>
                                 <a href="{{ route('suppliers.show', $supplier->id) }}" class="btn btn-info btn-sm">Details</a>
+                                
+                                <!-- Delete button -->
+                                <form action="{{ route('suppliers.destroy', $supplier->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this supplier?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
                             </td>
                         </tr>
                     @empty

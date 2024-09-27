@@ -11,7 +11,7 @@
             <p>Phone: {{ $supplier->phone }}</p>
             <p>Date: {{ now()->format('Y-m-d') }}</p>
 
-            <a href="{{ route('suppliers.print', $supplier->id) }}" class="btn btn-primary" target="_blank">Print PDF</a>
+            <a href="{{ route('suppliers.print', $supplier->id) }}" class="btn btn-primary" target="_blank">Print Invoice</a>
 
             <h4>Purchase Products</h4>
             <table class="table table-bordered">

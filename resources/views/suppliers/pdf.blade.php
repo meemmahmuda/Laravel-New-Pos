@@ -16,6 +16,10 @@
             color: #0056b3;
         }
 
+        h1 {
+            text-align: center;
+        }
+
         .container {
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -55,6 +59,7 @@
 </head>
 <body>
     <div class="container">
+        <h1>Purchase Invoice</h1>
         <h3>Supplier: {{ $supplier->name }}</h3>
         <p>Phone: {{ $supplier->phone }}</p>
         <p>Date: {{ now()->format('Y-m-d') }}</p>
