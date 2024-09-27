@@ -2,16 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    use HasFactory;
-
-    // If your table name is not 'orders', specify it explicitly
-    protected $table = 'orders';
-
     // Specify the fillable properties for mass assignment
     protected $fillable = [
         'product_id',
@@ -19,8 +13,8 @@ class Order extends Model
         'quantity',
         'purchase_price',
         'total_price',
-        'amount_given',
-        'amount_return'
+        'amount_given',   // New field for amount given
+        'amount_return'   // New field for amount returned
     ];
 
     // Define the relationship to the Product model

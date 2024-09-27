@@ -19,7 +19,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('expenses.index') }}" class="nav-link text-white">
                     <i class="fa-solid fa-right-to-bracket"></i> Expenses
                     </a>
                 </li>
@@ -29,12 +29,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('orders.create') }}" class="nav-link text-white">
                         <i class="fa fa-shopping-cart"></i> Orders
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('orders.index') }}" class="nav-link text-white">
                         <i class="fa-solid fa-bag-shopping"></i> Purchases
                     </a>
                 </li>

@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ExpenseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,5 +25,6 @@ Route::get('/', function () {
 Route::resource('categories', CategoryController::class);
 Route::resource('suppliers', SupplierController::class);
 Route::resource('products', ProductController::class);
-Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
-Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+Route::resource('orders', OrderController::class);
+Route::resource('expenses', ExpenseController::class);
+

@@ -4,48 +4,123 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    // Display the form for creating multiple orders
+    // Display a listing of the orders
+    public function index()
+    {
+        // Load orders with product and supplier relationships
+        $orders = Order::with('product', 'supplier')->orderBy('created_at', 'desc')->get();
+        return view('orders.index', compact('orders'));
+    }
+
+    // Show the form for creating a new order
     public function create()
     {
-        $products = Product::all();
-        $suppliers = Supplier::all();
-        
-        return view('orders.create', compact('products', 'suppliers'));
+        // Load products with their suppliers
+        $products = Product::with('supplier')->get();
+        return view('orders.create', compact('products'));
     }
-    
 
-    // Store multiple orders in the database
-    public function store(Request $request)
+    // Store a newly created order in the database
+// Store a newly created order in the database
+public function store(Request $request)
+{
+    // Validate the request input
+    $request->validate([
+        'order_data' => 'required', // Add validation for the serialized order data
+        'amount_given' => 'required|integer|min:0',
+    ]);
+
+    // Decode the order data
+    $orders = json_decode($request->order_data, true);
+
+    // Iterate through the orders and store them
+    foreach ($orders as $order) {
+        // Find the product and calculate total price
+        $product = Product::findOrFail($order['product_id']);
+        $totalPrice = $product->purchase_price * $order['quantity'];
+
+        // Update the product stock
+        $product->stock = ($product->stock ?? 0) + $order['quantity'];
+        $product->save();  // Save the updated stock
+
+        // Create the new order
+        Order::create([
+            'product_id' => $product->id,
+            'supplier_id' => $product->supplier_id,
+            'quantity' => $order['quantity'],
+            'purchase_price' => $product->purchase_price,
+            'total_price' => $totalPrice,
+            'amount_given' => $request->amount_given,
+            'amount_return' => $request->amount_return,
+        ]);
+    }
+
+    return redirect()->route('orders.index')->with('success', 'Order created successfully.');
+}
+
+
+    // Show the form for editing the specified order
+    public function edit(Order $order)
     {
-        // Validate the incoming request
+        // Load products with their suppliers for the dropdown
+        $products = Product::with('supplier')->get();
+        return view('orders.edit', compact('order', 'products'));
+    }
+
+    // Update the specified order in the database
+    public function update(Request $request, Order $order)
+    {
+        // Validate the request input
         $request->validate([
-            'orders' => 'required|array',
-            'orders.*.product_id' => 'required|exists:products,id',
-            'orders.*.supplier_id' => 'required|exists:suppliers,id',
-            'orders.*.quantity' => 'required|integer|min:1',
-            'orders.*.purchase_price' => 'required|integer|min:0',
-            'orders.*.amount_given' => 'nullable|integer|min:0',
-            'orders.*.amount_return' => 'nullable|integer|min:0',
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'amount_given' => 'nullable|integer|min:0', // Validate amount given
+            'amount_return' => 'nullable|integer|min:0', // Validate amount returned
         ]);
 
-        // Loop through each order and create it
-        foreach ($request->orders as $orderData) {
-            Order::create([
-                'product_id' => $orderData['product_id'],
-                'supplier_id' => $orderData['supplier_id'],
-                'quantity' => $orderData['quantity'],
-                'purchase_price' => $orderData['purchase_price'],
-                'total_price' => $orderData['quantity'] * $orderData['purchase_price'], // Calculate total price
-                'amount_given' => $orderData['amount_given'],
-                'amount_return' => $orderData['amount_return'],
-            ]);
-        }
+        // Find the product and calculate total price
+        $product = Product::findOrFail($request->product_id);
+        $totalPrice = $product->purchase_price * $request->quantity;
 
-        return redirect()->route('orders.index')->with('success', 'Orders created successfully.');
+        // Update the order
+        $order->update([
+            'product_id' => $product->id,
+            'supplier_id' => $product->supplier_id,
+            'quantity' => $request->quantity,
+            'purchase_price' => $product->purchase_price,
+            'total_price' => $totalPrice,
+            'amount_given' => $request->amount_given,
+            'amount_return' => $request->amount_return,
+        ]);
+
+        return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
     }
+
+    // Remove the specified order from the database
+    public function destroy(Order $order)
+    {
+        // Find the product associated with the order
+        $product = Product::findOrFail($order->product_id);
+    
+        // Deduct the order quantity from the product's stock
+        if ($product->stock >= $order->quantity) {
+            $product->stock -= $order->quantity;
+        } else {
+            // If somehow the stock is less than the order quantity, set stock to 0
+            $product->stock = 0;
+        }
+    
+        // Save the updated product stock
+        $product->save();
+    
+        // Delete the order
+        $order->delete();
+    
+        return redirect()->route('orders.index')->with('success', 'Order deleted successfully and stock updated.');
+    }
+    
 }
