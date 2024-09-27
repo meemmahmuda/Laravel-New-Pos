@@ -27,4 +27,7 @@ Route::resource('suppliers', SupplierController::class);
 Route::resource('products', ProductController::class);
 Route::resource('orders', OrderController::class);
 Route::resource('expenses', ExpenseController::class);
+Route::get('/suppliers/{id}', [SupplierController::class, 'show'])->name('suppliers.show');
+
+Route::get('/suppliers/{supplier}/print', [SupplierController::class, 'printSupplierDetails'])->name('suppliers.print');
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use PDF;
 
 class SupplierController extends Controller
 {
@@ -11,6 +12,22 @@ class SupplierController extends Controller
     {
         $suppliers = Supplier::orderBy('created_at', 'desc')->get();
         return view('suppliers.index', compact('suppliers'));
+    }
+
+    public function printSupplierDetails($id)
+    {
+        $supplier = Supplier::with('orders.product')->findOrFail($id);
+    
+        // Load the PDF view and pass the supplier data
+        $pdf = PDF::loadView('suppliers.pdf', compact('supplier'));
+    
+        return $pdf->stream('supplier-details.pdf'); // or use ->download('supplier-details.pdf') to force download
+    }
+
+    public function show($id)
+    {
+        $supplier = Supplier::with('orders.product')->findOrFail($id);
+        return view('suppliers.show', compact('supplier'));
     }
 
     public function create()

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -11,10 +12,19 @@ class OrderController extends Controller
     // Display a listing of the orders
     public function index()
     {
-        // Load orders with product and supplier relationships
-        $orders = Order::with('product', 'supplier')->orderBy('created_at', 'desc')->get();
-        return view('orders.index', compact('orders'));
+        // Get all suppliers who have made purchases
+        $suppliers = Supplier::has('orders')->get();
+        return view('orders.index', compact('suppliers'));
     }
+    
+    public function show($id)
+    {
+        // Find the supplier by ID and eager load orders and products
+        $supplier = Supplier::with('orders.product')->findOrFail($id);
+    
+        return view('suppliers.show', compact('supplier'));
+    }
+    
 
     // Show the form for creating a new order
     public function create()

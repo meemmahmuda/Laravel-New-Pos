@@ -10,4 +10,9 @@ class Supplier extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'address', 'phone'];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }
