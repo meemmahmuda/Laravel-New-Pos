@@ -13,6 +13,7 @@
                     <tr>
                         <th>Sale ID</th>
                         <th>Sale Date</th>
+                        <th>Product Name</th> <!-- New column for Product Name -->
                         <th>Quantity</th>
                         <th>Selling Price</th>
                         <th>Discount</th>
@@ -31,6 +32,7 @@
                         <tr>
                             <td>{{ $sale->id }}</td>
                             <td>{{ $sale->created_at->format('d-m-Y H:i:s') }}</td>
+                            <td>{{ $sale->product->name ?? 'N/A' }}</td> <!-- Display the product name -->
                             <td>{{ $sale->quantity }}</td>
                             <td>{{ $sale->selling_price }}</td>
                             <td>{{ $sale->discount }}%</td>
@@ -47,13 +49,11 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="5" class="text-right"><strong>Total Price:</strong></td>
-                        <td colspan="1">{{ $totalPrice }}</td> 
+                        <td colspan="6" class="text-right"><strong>Total Price:</strong></td>
+                        <td>{{ $totalPrice }}</td> 
                         <td>{{ $totalMoneyTaken }}</td> <!-- Display the total money taken -->
-                        <td colspan="3">{{ $totalMoneyReturned }}</td> <!-- Display the total money returned -->
-
+                        <td>{{ $totalMoneyReturned }}</td> <!-- Display the total money returned -->
                     </tr>
-                    
                 </tfoot>
             </table>
 

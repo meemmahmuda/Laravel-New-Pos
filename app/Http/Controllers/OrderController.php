@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use PDF;
 
 class OrderController extends Controller
 {
@@ -132,5 +133,117 @@ public function store(Request $request)
     
         return redirect()->route('orders.index')->with('success', 'Order deleted successfully and stock updated.');
     }
+
+    public function generatePdf(Request $request)
+    {
+        $date = $request->input('date');
+        $month = $request->input('month');
+        $reportData = [];
+    
+        // Logic to fetch report data based on date
+        if ($date) {
+            $reportData = Order::whereDate('created_at', $date)
+                ->with('supplier', 'product') // Assuming relationships exist for supplier and product
+                ->get()
+                ->map(function($order) {
+                    return [
+                        'supplier' => $order->supplier->name ?? 'N/A',
+                        'product_name' => $order->product->name ?? 'N/A',
+                        'quantity' => $order->quantity,
+                        'purchase_price' => $order->purchase_price,
+                        'total_price' => $order->quantity * $order->purchase_price,
+                    ];
+                });
+        }
+    
+        // Logic to fetch report data based on month
+        elseif ($month) {
+            $reportData = Order::whereMonth('created_at', $month)
+                ->with('supplier', 'product') // Assuming relationships exist for supplier and product
+                ->get()
+                ->map(function($order) {
+                    return [
+                        'supplier' => $order->supplier->name ?? 'N/A',
+                        'product_name' => $order->product->name ?? 'N/A',
+                        'quantity' => $order->quantity,
+                        'purchase_price' => $order->purchase_price,
+                        'total_price' => $order->quantity * $order->purchase_price,
+                    ];
+                });
+        }
+    
+        // Load the view and pass data to it
+        $pdf = PDF::loadView('orders.orders-pdf', [
+            'reportData' => $reportData,
+            'date' => $date,
+            'month' => $month,
+        ]);
+    
+        // Return the generated PDF
+        return $pdf->download('purchase_report.pdf');
+    }
+       
+
+
+    public function report(Request $request)
+    {
+        // Get the date and month from the request
+        $date = $request->input('date');
+        $month = $request->input('month');
+    
+        // Initialize the query for orders with related products and suppliers
+        $query = Order::with('product.supplier');
+    
+        // Filter by date if provided
+        if ($date) {
+            $query->whereDate('created_at', $date);
+        }
+        // Filter by month if provided (ignore date)
+        elseif ($month) {
+            $year = now()->year;
+            $startDate = "$year-$month-01"; // Start of the month
+            $endDate = now()->setYear($year)->setMonth($month)->endOfMonth()->format('Y-m-d'); // End of the month
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+        // If neither date nor month is provided, use today's date
+        else {
+            $date = now()->format('Y-m-d');
+            $query->whereDate('created_at', $date);
+        }
+    
+        // Fetch orders and eager load relationships
+        $orders = $query->get();
+    
+        // Initialize array to store report data
+        $reportData = [];
+    
+        foreach ($orders as $order) {
+            $product = $order->product;
+            $supplier = $product->supplier->name ?? 'N/A'; // Ensure supplier exists
+            $productName = $product->name;
+            $quantity = $order->quantity;
+            $purchasePrice = $order->purchase_price;
+            $totalPrice = $order->total_price;
+    
+            // Add data to report array
+            $reportData[] = [
+                'supplier' => $supplier,
+                'product_name' => $productName,
+                'quantity' => $quantity,
+                'purchase_price' => number_format($purchasePrice, 2),
+                'total_price' => number_format($totalPrice, 2),
+            ];
+        }
+    
+        // Pass data to the view
+        return view('orders.report', [
+            'reportData' => $reportData,
+            'selectedDate' => $date,
+            'selectedMonth' => $month
+        ]);
+    }
+    
+    
+    
     
 }

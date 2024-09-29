@@ -44,6 +44,7 @@ public function index()
         return view('sales.show', compact('sales', 'customerName'));
     }
     
+    
     public function generateSalePdf($saleId)
     {
         // Fetch the sale and related customer information
@@ -56,6 +57,67 @@ public function index()
         // Return the generated PDF as a download
         return $pdf->download('sale-details.pdf');
     }
+
+
+    public function generateReportPdf(Request $request)
+{
+    // Get the date and month from the request
+    $date = $request->input('date');
+    $month = $request->input('month');
+    
+    // Initialize the query
+    $query = Sale::with('product.category');
+    
+    // Filter by date if provided
+    if ($date) {
+        $query->whereDate('created_at', $date);
+    }
+    // Filter by month if provided (ignore date)
+    elseif ($month) {
+        $year = now()->year;
+        $startDate = "$year-$month-01";
+        $endDate = now()->year($year)->month($month)->endOfMonth()->format('Y-m-d');
+        $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
+    // Use today's date if neither date nor month is provided
+    else {
+        $date = now()->format('Y-m-d');
+        $query->whereDate('created_at', $date);
+    }
+
+    // Fetch sales data
+    $sales = $query->get();
+    
+    // Prepare report data for PDF
+    $reportData = [];
+    foreach ($sales as $sale) {
+        $category = $sale->product->category->name;
+        $productName = $sale->product->name;
+        $unitsSold = $sale->quantity;
+        $unitPrice = $sale->selling_price;
+        $discount = $sale->discount;
+        $subtotal = $unitPrice * $unitsSold;
+        $discountAmount = ($discount / 100) * $subtotal;
+        $totalSales = $subtotal;
+        $netSales = $subtotal - $discountAmount;
+
+        $reportData[] = [
+            'category' => $category,
+            'product_name' => $productName,
+            'units_sold' => $unitsSold,
+            'unit_price' => number_format($unitPrice, 2),
+            'discount' => number_format($discountAmount, 2),
+            'total_sales' => number_format($totalSales, 2),
+            'net_sales' => number_format($netSales, 2),
+        ];
+    }
+    
+    // Generate PDF using the view
+    $pdf = PDF::loadView('sales.report_pdf', compact('reportData', 'date', 'month'));
+    
+    // Return the PDF as a download
+    return $pdf->download('sales_report.pdf');
+}
 
 
     // Store a newly created sale in the database
@@ -175,84 +237,74 @@ public function index()
         return redirect()->route('sales.index')->with('success', 'Sale deleted successfully.');
     }
 
-
-    public function printInvoice($id)
-    {
-        $sale = Sale::findOrFail($id);
-
-        // Load your PDF view and pass the sale data
-        $pdf = PDF::loadView('sales.invoice', ['sale' => $sale]);
-
-        return $pdf->stream('invoice.pdf'); // or use ->download('invoice.pdf') to force download
-    }
-
   
     
-public function report(Request $request)
-{
-    // Get the date and month from the request
-    $date = $request->input('date');
-    $month = $request->input('month');
-    
-    // Initialize the query
-    $query = Sale::with('product.category');
-    
-    // Filter by date if provided
-    if ($date) {
-        // Ensure the date is in Y-m-d format
-        $query->whereDate('created_at', $date);
-    }
-    // Filter by month if provided (ignore date)
-    elseif ($month) {
-        $year = now()->year;
-        $startDate = "$year-$month-01";
-        // Ensure the end date includes the last day of the month
-        $endDate = now()->year($year)->month($month)->endOfMonth()->format('Y-m-d');
-        $query->whereBetween('created_at', [$startDate, $endDate]);
-    } 
-    // If neither date nor month is provided, use today's date
-    else {
-        $date = now()->format('Y-m-d');
-        $query->whereDate('created_at', $date);
-    }
-    
-    // Fetch sales data and eager load relationships
-    $sales = $query->get();
-    
-    // Initialize array to store report data
-    $reportData = [];
-    
-    foreach ($sales as $sale) {
-        $category = $sale->product->category->name;
-        $productName = $sale->product->name;
-        $unitsSold = $sale->quantity;
-        $unitPrice = $sale->selling_price;
-        $discount = $sale->discount;
+    public function report(Request $request)
+    {
+        // Get the date and month from the request
+        $date = $request->input('date');
+        $month = $request->input('month');
         
-        // Calculate total sales and net sales
-        $subtotal = $unitPrice * $unitsSold;
-        $discountAmount = ($discount / 100) * $subtotal;
-        $totalSales = $subtotal;
-        $netSales = $subtotal - $discountAmount;
-    
-        // Add data to report array
-        $reportData[] = [
-            'category' => $category,
-            'product_name' => $productName,
-            'units_sold' => $unitsSold,
-            'unit_price' => number_format($unitPrice, 2),
-            'discount' => number_format($discountAmount, 2),
-            'total_sales' => number_format($totalSales, 2),
-            'net_sales' => number_format($netSales, 2),
-        ];
+        // Initialize the query
+        $query = Sale::with('product.category');
+        
+        // Filter by date if provided
+        if ($date) {
+            // Ensure the date is in Y-m-d format
+            $query->whereDate('created_at', $date);
+        }
+        // Filter by month if provided (ignore date)
+        elseif ($month) {
+            $year = now()->year;
+            $startDate = "$year-$month-01";
+            // Ensure the end date includes the last day of the month
+            $endDate = now()->year($year)->month($month)->endOfMonth()->format('Y-m-d');
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        } 
+        // If neither date nor month is provided, use today's date
+        else {
+            $date = now()->format('Y-m-d');
+            $query->whereDate('created_at', $date);
+        }
+        
+        // Fetch sales data and eager load relationships
+        $sales = $query->get();
+        
+        // Initialize array to store report data
+        $reportData = [];
+        
+        foreach ($sales as $sale) {
+            $category = $sale->product->category->name;
+            $productName = $sale->product->name;
+            $unitsSold = $sale->quantity;
+            $unitPrice = $sale->selling_price;
+            $discount = $sale->discount;
+            
+            // Calculate total sales and net sales
+            $subtotal = $unitPrice * $unitsSold;
+            $discountAmount = ($discount / 100) * $subtotal;
+            $totalSales = $subtotal;
+            $netSales = $subtotal - $discountAmount;
+        
+            // Add data to report array
+            $reportData[] = [
+                'category' => $category,
+                'product_name' => $productName,
+                'units_sold' => $unitsSold,
+                'unit_price' => number_format($unitPrice, 2),
+                'discount' => number_format($discountAmount, 2),
+                'total_sales' => number_format($totalSales, 2),
+                'net_sales' => number_format($netSales, 2),
+            ];
+        }
+        
+        // Pass data to the view
+        return view('sales.report', [
+            'reportData' => $reportData,
+            'selectedDate' => $date,
+            'selectedMonth' => $month
+        ]);
     }
     
-    // Pass data to the view
-    return view('sales.report', [
-        'reportData' => $reportData,
-        'selectedDate' => $date,
-        'selectedMonth' => $month
-    ]);
-}
 
 }

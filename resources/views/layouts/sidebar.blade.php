@@ -4,7 +4,7 @@
         <div class="p-3">
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('dashboard') }}" class="nav-link text-white">
                         <i class="fa fa-tachometer-alt"></i> Dashboard
                     </a>
                 </li>
@@ -44,22 +44,22 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('sales_returns.index') }}" class="nav-link text-white">
                         <i class="fa fa-arrow-circle-right"></i> Sales Return
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('sales.report') }}" class="nav-link text-white">
                         <i class="fa-regular fa-flag"></i> Sales Report
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('orders.report') }}" class="nav-link text-white">
                         <i class="fa-regular fa-flag"></i> Purchases Report
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" class="nav-link text-white">
+                    <a href="{{ route('income_statement.index') }}" class="nav-link text-white">
                         <i class="fa fa-chart-line"></i> Income Statement
                     </a>
                 </li>
