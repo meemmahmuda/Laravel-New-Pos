@@ -36,7 +36,7 @@ Route::resource('categories', CategoryController::class);
 Route::resource('suppliers', SupplierController::class);
 Route::resource('products', ProductController::class);
 
-Route::get('/income-statement/print', [IncomeStatementController::class, 'print'])->name('income_statement.print');
+Route::get('/income-statement/pdf', [IncomeStatementController::class, 'generatePDF'])->name('income_statement.pdf');
 
 
 Route::get('orders/report', [OrderController::class, 'report'])->name('orders.report');

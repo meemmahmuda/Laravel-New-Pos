@@ -17,10 +17,10 @@
         </div>
     </form>
 
-    <!-- Print button -->
-    <div class="mb-4">
-        <a href="{{ route('income_statement.print', ['month' => $selectedMonth]) }}" class="btn btn-success">Print PDF</a>
-    </div>
+    <a href="{{ route('income_statement.pdf', ['month' => $selectedMonth]) }}" class="btn btn-success mb-4">
+    Download PDF
+</a>
+
 
     <!-- Display the income statement in vertical format -->
     <table class="table table-bordered">
